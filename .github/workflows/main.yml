@@ -1,0 +1,35 @@
+name: Android CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: checkout submodule
+      run: git submodule sync --recursive && git submodule update --init --recursive
+      
+    - name: before build
+      uses: xdtianyu/actions-android-ci@master
+      with:
+        args: '"
+        source .travis/env.sh;
+        touch local.properties
+        "'
+
+    - name: build
+      uses: xdtianyu/actions-android-ci@master
+      with: 
+        args: '"
+        source .travis/env.sh;
+        source /opt/setup-android-sdk.sh;
+        ./gradlew assembleRelease
+        "'
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v1
+      with:
+        name: apk
+        path: app/build/outputs
